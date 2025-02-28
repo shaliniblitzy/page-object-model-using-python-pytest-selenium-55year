@@ -1,0 +1,65 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python packaging
+*.egg-info/
+dist/
+build/
+eggs/
+.eggs/
+*.egg
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+.python-version
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-*
+.project
+.pydevproject
+.settings/
+
+# Test artifacts - exclude generated content but keep directory structure
+reports/html/*
+reports/screenshots/*
+reports/logs/*
+reports/performance/*
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Keep directory structure with empty .gitkeep files
+!reports/html/.gitkeep
+!reports/screenshots/.gitkeep
+!reports/logs/.gitkeep
+!reports/performance/.gitkeep
+
+# Environment configuration files containing sensitive data
+.env
+config.local.py
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+*.swp
+
+# Temporary files
+*.log
+*.db
+tmp/
+temp/
+*.tmp
+
+# WebDriver binaries managed by webdriver-manager
+drivers/
+
+# Dependency directories
+node_modules/
+bower_components/
+jspm_packages/
