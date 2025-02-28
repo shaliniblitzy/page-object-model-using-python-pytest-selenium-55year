@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: storydoc-test-automation-ingress
+  namespace: storydoc-automation
+  labels:
+    app: storydoc-test-automation
+    component: test-reporting
+    environment: staging
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    description: "Ingress for Storydoc test automation reporting interface"
+    owner: "qa-team"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - test-reports.editor-staging.storydoc.com
+    secretName: storydoc-test-automation-tls
+  rules:
+  - host: test-reports.editor-staging.storydoc.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: storydoc-test-automation
+            port:
+              number: 80
