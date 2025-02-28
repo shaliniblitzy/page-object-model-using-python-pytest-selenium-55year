@@ -1,0 +1,139 @@
+{
+  "default_story": {
+    "title": "Test Story",
+    "template": "basic",
+    "content": "This is a test story created for automation testing",
+    "tags": ["test", "automation"],
+    "expected_success": true
+  },
+  "predefined_stories": [
+    {
+      "title": "Business Presentation",
+      "template": "presentation",
+      "content": "A professional business presentation with key points and data",
+      "tags": ["business", "presentation"],
+      "elements": ["title", "subtitle", "bullet_list", "image", "chart"],
+      "expected_success": true
+    },
+    {
+      "title": "Product Showcase",
+      "template": "product",
+      "content": "Showcasing product features and benefits",
+      "tags": ["product", "showcase"],
+      "elements": ["title", "image_gallery", "feature_list", "pricing", "call_to_action"],
+      "expected_success": true
+    },
+    {
+      "title": "Creative Portfolio",
+      "template": "portfolio",
+      "content": "A creative portfolio displaying various projects",
+      "tags": ["creative", "portfolio"],
+      "elements": ["title", "about", "project_gallery", "testimonials", "contact"],
+      "expected_success": true
+    },
+    {
+      "title": "Blank Story",
+      "template": "blank",
+      "content": "",
+      "tags": ["minimal"],
+      "elements": ["custom"],
+      "expected_success": true
+    }
+  ],
+  "story_content": {
+    "text_blocks": {
+      "short": "This is a short text block for testing.",
+      "medium": "This is a medium length text block that spans multiple sentences. It provides more content for testing text handling in the story editor.",
+      "long": "This is a long text block containing multiple paragraphs and formatting options.\n\nIt includes line breaks, bullet points, and other formatting to test the rich text capabilities of the story editor.\n\n- Point 1\n- Point 2\n- Point 3\n\nThis allows testing of more complex content scenarios."
+    },
+    "images": {
+      "placeholder": "placeholder_image.jpg",
+      "sample": "sample_image.jpg",
+      "chart": "chart_image.png"
+    },
+    "lists": {
+      "bullet": ["Item 1", "Item 2", "Item 3"],
+      "numbered": ["First item", "Second item", "Third item"],
+      "feature": ["Feature 1: Description", "Feature 2: Description", "Feature 3: Description"]
+    }
+  },
+  "sharing_scenarios": {
+    "single_recipient": {
+      "title": "Single Recipient Sharing",
+      "template": "basic",
+      "recipient_count": 1,
+      "include_message": true,
+      "message": "Check out this story I created!",
+      "expected_delivery_time": 30
+    },
+    "multiple_recipients": {
+      "title": "Multiple Recipients Sharing",
+      "template": "presentation",
+      "recipient_count": 3,
+      "include_message": true,
+      "message": "Sharing this presentation with the team",
+      "expected_delivery_time": 45
+    },
+    "no_message": {
+      "title": "Sharing Without Message",
+      "template": "product",
+      "recipient_count": 1,
+      "include_message": false,
+      "expected_delivery_time": 30
+    }
+  },
+  "validation_scenarios": {
+    "invalid_email": {
+      "title": "Invalid Email Test",
+      "template": "basic",
+      "recipient_email": "invalid-email",
+      "expected_error": true,
+      "error_message": "Please enter a valid email address"
+    },
+    "empty_title": {
+      "title": "",
+      "template": "basic",
+      "expected_error": true,
+      "error_message": "Title is required"
+    },
+    "too_long_title": {
+      "title": "This title is extremely long and exceeds the maximum character limit for a story title in the Storydoc application which may cause validation errors during testing",
+      "template": "basic",
+      "expected_error": true,
+      "error_message": "Title exceeds maximum length"
+    }
+  },
+  "test_scenarios": {
+    "create_default_story": {
+      "title": "Test Story",
+      "template": "basic",
+      "expected_success": true
+    },
+    "create_with_template": {
+      "title": "Template Test Story",
+      "template": "presentation",
+      "expected_success": true
+    },
+    "create_multiple_stories": {
+      "count": 3,
+      "base_title": "Multiple Story",
+      "template": "basic",
+      "expected_success": true
+    },
+    "autosave_testing": {
+      "title": "Autosave Test Story",
+      "template": "basic",
+      "edit_count": 3,
+      "edit_interval": 5,
+      "expected_success": true
+    },
+    "share_story_test": {
+      "title": "Share Test Story",
+      "template": "basic",
+      "recipient_domain": "mailinator.com",
+      "include_message": true,
+      "message": "Testing story sharing functionality",
+      "expected_success": true
+    }
+  }
+}
