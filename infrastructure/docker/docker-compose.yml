@@ -1,0 +1,168 @@
+version: '3.8'
+
+services:
+  # Main service for running all Storydoc automation tests
+  storydoc-tests:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    volumes:
+      - ./reports:/app/reports
+    environment:
+      - BASE_URL=https://editor-staging.storydoc.com
+      - BROWSER_TYPE=chrome
+      - HEADLESS_MODE=true
+      - DEFAULT_TIMEOUT=10
+      - MAILINATOR_DOMAIN=mailinator.com
+      - TEST_USER_PASSWORD=Test@123
+      - TEST_USER_NAME=Test User
+      - LOG_LEVEL=INFO
+      - RETRY_COUNT=3
+      - PARALLEL_WORKERS=2
+    command: ["pytest", "src/test/tests", "-v", "--html=reports/html/report.html"]
+
+  # Service for running user registration tests only
+  registration-tests:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    volumes:
+      - ./reports:/app/reports
+    environment:
+      - BASE_URL=https://editor-staging.storydoc.com
+      - BROWSER_TYPE=chrome
+      - HEADLESS_MODE=true
+      - DEFAULT_TIMEOUT=10
+      - MAILINATOR_DOMAIN=mailinator.com
+      - TEST_USER_PASSWORD=Test@123
+      - TEST_USER_NAME=Test User
+      - LOG_LEVEL=INFO
+    command: ["pytest", "src/test/tests/user_registration", "-v", "--html=reports/html/registration_report.html"]
+
+  # Service for running user authentication tests only
+  authentication-tests:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    volumes:
+      - ./reports:/app/reports
+    environment:
+      - BASE_URL=https://editor-staging.storydoc.com
+      - BROWSER_TYPE=chrome
+      - HEADLESS_MODE=true
+      - DEFAULT_TIMEOUT=10
+      - MAILINATOR_DOMAIN=mailinator.com
+      - TEST_USER_PASSWORD=Test@123
+      - TEST_USER_NAME=Test User
+      - LOG_LEVEL=INFO
+    command: ["pytest", "src/test/tests/user_authentication", "-v", "--html=reports/html/authentication_report.html"]
+
+  # Service for running story creation tests only
+  story-creation-tests:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    volumes:
+      - ./reports:/app/reports
+    environment:
+      - BASE_URL=https://editor-staging.storydoc.com
+      - BROWSER_TYPE=chrome
+      - HEADLESS_MODE=true
+      - DEFAULT_TIMEOUT=10
+      - MAILINATOR_DOMAIN=mailinator.com
+      - TEST_USER_PASSWORD=Test@123
+      - TEST_USER_NAME=Test User
+      - LOG_LEVEL=INFO
+    command: ["pytest", "src/test/tests/story_creation", "-v", "--html=reports/html/story_creation_report.html"]
+
+  # Service for running story sharing tests only
+  story-sharing-tests:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    volumes:
+      - ./reports:/app/reports
+    environment:
+      - BASE_URL=https://editor-staging.storydoc.com
+      - BROWSER_TYPE=chrome
+      - HEADLESS_MODE=true
+      - DEFAULT_TIMEOUT=10
+      - MAILINATOR_DOMAIN=mailinator.com
+      - TEST_USER_PASSWORD=Test@123
+      - TEST_USER_NAME=Test User
+      - LOG_LEVEL=INFO
+    command: ["pytest", "src/test/tests/story_sharing", "-v", "--html=reports/html/story_sharing_report.html"]
+
+  # Service for running end-to-end workflow tests
+  e2e-tests:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    volumes:
+      - ./reports:/app/reports
+    environment:
+      - BASE_URL=https://editor-staging.storydoc.com
+      - BROWSER_TYPE=chrome
+      - HEADLESS_MODE=true
+      - DEFAULT_TIMEOUT=15
+      - MAILINATOR_DOMAIN=mailinator.com
+      - TEST_USER_PASSWORD=Test@123
+      - TEST_USER_NAME=Test User
+      - LOG_LEVEL=INFO
+    command: ["pytest", "src/test/tests/end_to_end", "-v", "--html=reports/html/e2e_report.html"]
+
+  # Service for running tests with Firefox browser
+  firefox-tests:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    volumes:
+      - ./reports:/app/reports
+    environment:
+      - BASE_URL=https://editor-staging.storydoc.com
+      - BROWSER_TYPE=firefox
+      - HEADLESS_MODE=true
+      - DEFAULT_TIMEOUT=10
+      - MAILINATOR_DOMAIN=mailinator.com
+      - TEST_USER_PASSWORD=Test@123
+      - TEST_USER_NAME=Test User
+      - LOG_LEVEL=INFO
+    command: ["pytest", "src/test/tests", "-v", "--html=reports/html/firefox_report.html"]
+
+  # Service for running tests in parallel mode for faster execution
+  parallel-tests:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    volumes:
+      - ./reports:/app/reports
+    environment:
+      - BASE_URL=https://editor-staging.storydoc.com
+      - BROWSER_TYPE=chrome
+      - HEADLESS_MODE=true
+      - DEFAULT_TIMEOUT=10
+      - MAILINATOR_DOMAIN=mailinator.com
+      - TEST_USER_PASSWORD=Test@123
+      - TEST_USER_NAME=Test User
+      - LOG_LEVEL=INFO
+      - PARALLEL_WORKERS=4
+    command: ["pytest", "src/test/tests", "-v", "-n", "4", "--html=reports/html/parallel_report.html"]
+
+  # Service for running custom test configurations with command-line arguments
+  custom-tests:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    volumes:
+      - ./reports:/app/reports
+    environment:
+      - BASE_URL=https://editor-staging.storydoc.com
+      - BROWSER_TYPE=chrome
+      - HEADLESS_MODE=true
+      - DEFAULT_TIMEOUT=10
+      - MAILINATOR_DOMAIN=mailinator.com
+      - TEST_USER_PASSWORD=Test@123
+      - TEST_USER_NAME=Test User
+      - LOG_LEVEL=INFO
+    entrypoint: ["/bin/bash", "-c"]
+    # Usage example: docker-compose run custom-tests 'pytest src/test/tests/user_registration -k test_valid_registration -v'
