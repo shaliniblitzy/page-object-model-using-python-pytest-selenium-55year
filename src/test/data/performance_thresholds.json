@@ -1,0 +1,98 @@
+{
+  "operations": {
+    "page_navigation": {
+      "target_response_time": 5000,
+      "timeout": 10000,
+      "retry_count": 1,
+      "description": "Time taken to navigate to a page and for it to fully load"
+    },
+    "element_interaction": {
+      "target_response_time": 2000,
+      "timeout": 5000,
+      "retry_count": 2,
+      "description": "Time taken to find and interact with an element"
+    },
+    "form_submission": {
+      "target_response_time": 3000,
+      "timeout": 10000,
+      "retry_count": 1,
+      "description": "Time taken to submit a form and receive a response"
+    },
+    "email_delivery": {
+      "target_response_time": 30000,
+      "timeout": 60000,
+      "polling_interval": 5000,
+      "description": "Time taken for an email to be delivered and available for verification"
+    },
+    "api_response": {
+      "target_response_time": 3000,
+      "timeout": 10000,
+      "retry_count": 2,
+      "description": "Time taken for an API request to receive a response"
+    }
+  },
+  "test_types": {
+    "user_registration": {
+      "max_duration": 30000,
+      "target_success_rate": 98,
+      "reporting_latency": 60000,
+      "description": "End-to-end user registration flow including email verification"
+    },
+    "user_authentication": {
+      "max_duration": 20000,
+      "target_success_rate": 99,
+      "reporting_latency": 60000,
+      "description": "User authentication flow including successful dashboard access"
+    },
+    "story_creation": {
+      "max_duration": 45000,
+      "target_success_rate": 95,
+      "reporting_latency": 60000,
+      "description": "Story creation flow including template selection and saving"
+    },
+    "story_sharing": {
+      "max_duration": 60000,
+      "target_success_rate": 95,
+      "reporting_latency": 60000,
+      "description": "Story sharing flow including email delivery verification"
+    },
+    "full_workflow": {
+      "max_duration": 180000,
+      "target_success_rate": 90,
+      "reporting_latency": 300000,
+      "description": "Complete end-to-end workflow from registration to story sharing"
+    }
+  },
+  "alert_thresholds": {
+    "test_pass_rate": {
+      "warning": 90,
+      "critical": 80,
+      "action": "Notify team, investigate failures",
+      "description": "Percentage of tests that pass in a test run"
+    },
+    "test_duration": {
+      "warning": 120,
+      "critical": 150,
+      "unit": "percent_of_baseline",
+      "action": "Investigate performance issues",
+      "description": "Test execution time compared to baseline"
+    },
+    "element_wait_time": {
+      "warning": 5000,
+      "critical": 10000,
+      "unit": "milliseconds",
+      "action": "Check application performance",
+      "description": "Time waiting for elements to be available"
+    },
+    "resource_usage": {
+      "warning": 80,
+      "critical": 90,
+      "unit": "percent",
+      "action": "Optimize resource usage",
+      "description": "CPU/Memory usage during test execution"
+    }
+  },
+  "version": "1.0.0",
+  "last_updated": "2023-08-01",
+  "description": "Performance thresholds and SLA requirements for the Storydoc test automation framework"
+}
