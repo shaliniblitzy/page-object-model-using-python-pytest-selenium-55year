@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  test-runner:
+    build:
+      context: ../..
+      dockerfile: src/test/ci/Dockerfile
+    volumes:
+      - ../../:/app
+      - test-results:/app/reports
+    working_dir: /app
+    environment:
+      BASE_URL: https://editor-staging.storydoc.com
+      BROWSER: chrome
+      HEADLESS: true
+      PYTEST_XDIST_WORKERS: 2
+      SELENIUM_HOST: selenium-chrome
+      SELENIUM_PORT: 4444
+    depends_on:
+      - selenium-chrome
+    networks:
+      - test-network
+    command: sh src/test/scripts/run_tests.sh --html=/app/reports/html/report.html --self-contained-html
+
+  selenium-chrome:
+    image: selenium/standalone-chrome:latest
+    volumes:
+      - /dev/shm:/dev/shm
+    ports:
+      - "4444:4444"
+    environment:
+      SE_NODE_MAX_SESSIONS: 4
+    networks:
+      - test-network
+    shm_size: 2g
+
+volumes:
+  test-results: {}
+
+networks:
+  test-network: {}
