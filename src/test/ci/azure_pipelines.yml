@@ -1,0 +1,173 @@
+# Azure DevOps pipeline for Storydoc Automation Tests
+name: Storydoc Automation Tests
+
+# Trigger the pipeline on push to specific branches
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    include:
+      - src/test/**
+    exclude:
+      - '*.md'
+
+# Trigger the pipeline on pull requests to specific branches
+pr:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    include:
+      - src/test/**
+    exclude:
+      - '*.md'
+
+# Schedule daily runs
+schedules:
+  - cron: "0 0 * * *"
+    displayName: Daily midnight build
+    branches:
+      include:
+        - main
+    always: true
+
+# Set the VM image for the build agent
+pool:
+  vmImage: 'ubuntu-latest'
+
+# Define variables for the pipeline
+variables:
+  TEST_ENVIRONMENT: 'staging'
+  TEST_BASE_URL: 'https://editor-staging.storydoc.com'
+  TEST_HEADLESS_MODE: 'true'
+  TEST_DEFAULT_TIMEOUT: '10'
+  TEST_EMAIL_TIMEOUT: '60'
+  TEST_MAILINATOR_DOMAIN: 'mailinator.com'
+  PYTHON_VERSION: '3.9'
+
+# Define the stages of the pipeline
+stages:
+  # Lint stage for code quality checks
+  - stage: Lint
+    jobs:
+      - job: LintCode
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(PYTHON_VERSION)'
+              addToPath: true
+            displayName: 'Use Python $(PYTHON_VERSION)'
+          
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                pip install flake8 black
+                flake8 src/test --count --select=E9,F63,F7,F82 --show-source --statistics
+                black --check src/test
+            displayName: 'Run linting'
+
+  # Unit Tests stage
+  - stage: UnitTests
+    dependsOn: Lint
+    jobs:
+      - job: RunUnitTests
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(PYTHON_VERSION)'
+              addToPath: true
+            displayName: 'Use Python $(PYTHON_VERSION)'
+          
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                pip install -r src/test/requirements.txt
+                cd src/test && python -m pytest utilities/ -v
+            displayName: 'Run unit tests'
+
+  # Integration Tests stage
+  - stage: IntegrationTests
+    dependsOn: UnitTests
+    jobs:
+      - job: RunIntegrationTests
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(PYTHON_VERSION)'
+              addToPath: true
+            displayName: 'Use Python $(PYTHON_VERSION)'
+          
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                pip install -r src/test/requirements.txt
+                cd src/test && bash scripts/setup_environment.sh staging
+                mkdir -p src/test/reports/screenshots src/test/reports/html src/test/reports/logs
+                cd src/test && bash scripts/run_tests.sh -c user_registration -l true -b chrome -r true
+            displayName: 'Run integration tests'
+          
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: 'src/test/reports/junit/*.xml'
+              mergeTestResults: true
+              testRunTitle: 'Integration Tests'
+            displayName: 'Publish test results'
+            condition: always()
+          
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: 'src/test/reports'
+              artifact: 'integration-test-reports'
+              publishLocation: 'pipeline'
+            displayName: 'Publish test artifacts'
+            condition: always()
+
+  # End-to-End Tests stage
+  - stage: E2ETests
+    dependsOn: IntegrationTests
+    jobs:
+      - job: RunE2ETests
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(PYTHON_VERSION)'
+              addToPath: true
+            displayName: 'Use Python $(PYTHON_VERSION)'
+          
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                pip install -r src/test/requirements.txt
+                cd src/test && bash scripts/setup_environment.sh staging
+                mkdir -p src/test/reports/screenshots src/test/reports/html src/test/reports/logs
+                cd src/test && bash scripts/run_tests.sh -c end_to_end -l true -b chrome -r true -p 2
+            displayName: 'Run E2E tests'
+            env:
+              TEST_BROWSER_TYPE: 'chrome'
+              TEST_HEADLESS_MODE: 'true'
+              TEST_CATEGORY: 'end_to_end'
+          
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: 'src/test/reports/junit/*.xml'
+              mergeTestResults: true
+              testRunTitle: 'E2E Tests'
+            displayName: 'Publish test results'
+            condition: always()
+          
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: 'src/test/reports'
+              artifact: 'e2e-test-reports'
+              publishLocation: 'pipeline'
+            displayName: 'Publish test artifacts'
+            condition: always()
