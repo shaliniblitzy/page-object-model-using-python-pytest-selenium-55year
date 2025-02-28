@@ -1,0 +1,37 @@
+**/__pycache__/
+**/.pytest_cache/
+**/.coverage
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Version control files
+**/.git/
+**/.github/
+**/.gitignore
+
+# Virtual environments and configuration
+**/venv/
+**/.env
+
+# Test artifacts (will be mounted as volumes)
+**/reports/
+**/screenshots/
+**/logs/
+**/htmlcov/
+
+# Infrastructure files not needed for Docker build
+**/infrastructure/kubernetes/
+**/infrastructure/terraform/
+
+# Documentation
+**/*.md
+README.md
+LICENSE
+
+# System and metadata files
+**/.DS_Store
+**/Thumbs.db
+
+# Node.js dependencies (if present)
+**/node_modules/
