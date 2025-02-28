@@ -1,0 +1,203 @@
+{
+  "user_registration": {
+    "valid_users": [
+      {
+        "name": "Test User",
+        "email_prefix": "test.user",
+        "password": "Test@123",
+        "expected_result": "success"
+      },
+      {
+        "name": "John Doe",
+        "email_prefix": "john.doe",
+        "password": "P@ssw0rd123",
+        "expected_result": "success"
+      }
+    ],
+    "invalid_users": [
+      {
+        "name": "",
+        "email_prefix": "invalid.user",
+        "password": "Test@123",
+        "expected_result": "name_required_error"
+      },
+      {
+        "name": "Invalid User",
+        "email_prefix": "",
+        "password": "Test@123",
+        "expected_result": "email_required_error"
+      },
+      {
+        "name": "Invalid User",
+        "email_prefix": "invalid.user",
+        "password": "123",
+        "expected_result": "password_strength_error"
+      },
+      {
+        "name": "Invalid User",
+        "email_prefix": "invalid@format",
+        "password": "Test@123",
+        "expected_result": "invalid_email_format_error"
+      }
+    ]
+  },
+  "user_authentication": {
+    "valid_credentials": [
+      {
+        "email": "existing.user@mailinator.com",
+        "password": "Test@123",
+        "expected_result": "success"
+      }
+    ],
+    "invalid_credentials": [
+      {
+        "email": "nonexistent.user@mailinator.com",
+        "password": "Test@123",
+        "expected_result": "user_not_found_error"
+      },
+      {
+        "email": "existing.user@mailinator.com",
+        "password": "WrongPassword123",
+        "expected_result": "invalid_password_error"
+      },
+      {
+        "email": "",
+        "password": "Test@123",
+        "expected_result": "email_required_error"
+      },
+      {
+        "email": "existing.user@mailinator.com",
+        "password": "",
+        "expected_result": "password_required_error"
+      }
+    ]
+  },
+  "story_creation": {
+    "valid_stories": [
+      {
+        "title": "Test Story",
+        "template": "Basic",
+        "content": "This is a test story content.",
+        "expected_result": "success"
+      },
+      {
+        "title": "Product Pitch",
+        "template": "Sales Pitch",
+        "content": "This is a product pitch story.",
+        "expected_result": "success"
+      },
+      {
+        "title": "Company Overview",
+        "template": "Company Profile",
+        "content": "This is a company overview story.",
+        "expected_result": "success"
+      }
+    ],
+    "invalid_stories": [
+      {
+        "title": "",
+        "template": "Basic",
+        "content": "This is a test story content.",
+        "expected_result": "title_required_error"
+      },
+      {
+        "title": "Very long title that exceeds the maximum allowed length for story titles in the Storydoc application",
+        "template": "Basic",
+        "content": "This is a test story content.",
+        "expected_result": "title_too_long_error"
+      }
+    ],
+    "templates": [
+      "Basic",
+      "Sales Pitch",
+      "Company Profile",
+      "Product Demo",
+      "Case Study",
+      "Portfolio"
+    ]
+  },
+  "story_sharing": {
+    "valid_sharing": [
+      {
+        "recipient_email_prefix": "recipient.user",
+        "message": "Check out this story I created!",
+        "expected_result": "success"
+      },
+      {
+        "recipient_email_prefix": "another.recipient",
+        "message": "",
+        "expected_result": "success"
+      }
+    ],
+    "invalid_sharing": [
+      {
+        "recipient_email_prefix": "",
+        "message": "Check out this story I created!",
+        "expected_result": "recipient_required_error"
+      },
+      {
+        "recipient_email_prefix": "invalid@format",
+        "message": "Check out this story I created!",
+        "expected_result": "invalid_email_format_error"
+      }
+    ]
+  },
+  "mailinator": {
+    "domains": [
+      "mailinator.com",
+      "mailinator2.com",
+      "sogetthis.com",
+      "mailinater.com",
+      "veryrealemail.com"
+    ],
+    "check_interval_seconds": 5,
+    "max_wait_time_seconds": 60,
+    "email_subjects": {
+      "registration": "Welcome to Storydoc",
+      "story_sharing": "Story shared with you"
+    }
+  },
+  "sla": {
+    "page_load_times": {
+      "signup_page": 3000,
+      "signin_page": 3000,
+      "dashboard_page": 5000,
+      "story_editor_page": 6000,
+      "share_dialog": 2000
+    },
+    "operation_times": {
+      "user_registration": 3000,
+      "user_authentication": 2000,
+      "story_creation": 5000,
+      "story_saving": 3000,
+      "story_sharing": 3000
+    },
+    "email_delivery_time": 30000
+  },
+  "end_to_end": {
+    "workflows": [
+      {
+        "name": "complete_user_journey",
+        "steps": [
+          "register_new_user",
+          "verify_email",
+          "sign_in",
+          "create_story",
+          "share_story",
+          "verify_sharing_email"
+        ],
+        "expected_result": "success"
+      },
+      {
+        "name": "existing_user_journey",
+        "steps": [
+          "sign_in",
+          "create_story",
+          "share_story",
+          "verify_sharing_email"
+        ],
+        "expected_result": "success"
+      }
+    ]
+  }
+}
