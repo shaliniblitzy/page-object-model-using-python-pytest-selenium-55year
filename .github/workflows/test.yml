@@ -1,0 +1,240 @@
+name: Storydoc Automation Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight UTC
+  workflow_dispatch:  # Allow manual triggering
+
+env:
+  PYTHON_VERSION: '3.9'
+  CHROME_VERSION: 'latest'
+  TEST_ENVIRONMENT: 'staging'
+  HEADLESS_MODE: 'true'
+
+jobs:
+  unit_tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r src/test/requirements.txt
+
+      - name: Run unit tests
+        run: cd src/test && python -m pytest utilities pages locators --cov=. --cov-report=xml --cov-report=html -v --json-report --json-report-file=./reports/unit_results.json
+
+      - name: Generate unit test report
+        run: cd src/test && bash scripts/generate_report.sh -f html -i ./reports/unit_results.json -o ./reports/html/unit_report.html -t "Storydoc Unit Tests Report"
+
+      - name: Upload unit test reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: unit-test-reports
+          path: src/test/reports/html/
+          retention-days: 30
+
+  integration_tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit_tests
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
+        with:
+          chrome-version: ${{ env.CHROME_VERSION }}
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r src/test/requirements.txt
+
+      - name: Run integration tests
+        run: |
+          cd src/test
+          # Run tests for user registration and authentication
+          bash scripts/run_tests.sh -c user_registration -b chrome -l ${{ env.HEADLESS_MODE }} -e ${{ env.TEST_ENVIRONMENT }} -r true -x true
+
+      - name: Upload integration test reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: integration-test-reports
+          path: src/test/reports/html/
+          retention-days: 30
+
+      - name: Upload test screenshots
+        uses: actions/upload-artifact@v3
+        with:
+          name: integration-test-screenshots
+          path: src/test/reports/screenshots/
+          retention-days: 30
+
+  e2e_tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: integration_tests
+    # Only run E2E tests on scheduled runs, manual runs, or pushes to main
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
+        with:
+          chrome-version: ${{ env.CHROME_VERSION }}
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r src/test/requirements.txt
+
+      - name: Run E2E tests
+        run: |
+          cd src/test
+          # Run end-to-end workflow tests
+          bash scripts/run_tests.sh -c end_to_end -b chrome -l ${{ env.HEADLESS_MODE }} -e ${{ env.TEST_ENVIRONMENT }} -r true -x true
+
+      - name: Upload E2E test reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-test-reports
+          path: src/test/reports/html/
+          retention-days: 30
+
+      - name: Upload test screenshots
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-test-screenshots
+          path: src/test/reports/screenshots/
+          retention-days: 30
+
+  test_summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [unit_tests, integration_tests, e2e_tests]
+    if: always()  # Always run this job, even if previous jobs fail
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install pytest pytest-html jinja2 matplotlib pandas
+
+      - name: Download all test reports
+        uses: actions/download-artifact@v3
+        with:
+          path: test-artifacts
+
+      - name: Generate consolidated test summary
+        run: |
+          cd src/test
+          # Create directories if they don't exist
+          mkdir -p reports/combined
+          mkdir -p reports/screenshots
+          
+          # Copy screenshots to the expected location
+          cp -r ../../test-artifacts/*-test-screenshots/screenshots/* reports/screenshots/ || true
+          
+          # Combine all JSON test results into one file
+          python -c "
+          import json
+          import os
+          import glob
+          
+          # Find all JSON test results
+          json_files = glob.glob('../../test-artifacts/**/*.json', recursive=True)
+          print(f'Found {len(json_files)} JSON result files')
+          
+          # Combine them into one file
+          combined_results = {
+              'tests': [],
+              'summary': {
+                  'total': 0,
+                  'passed': 0,
+                  'failed': 0,
+                  'skipped': 0,
+                  'error': 0
+              }
+          }
+          
+          for file_path in json_files:
+              try:
+                  with open(file_path, 'r') as f:
+                      results = json.load(f)
+                      if 'tests' in results:
+                          combined_results['tests'].extend(results['tests'])
+                      elif 'test_results' in results and 'tests' in results['test_results']:
+                          combined_results['tests'].extend(results['test_results']['tests'])
+              except Exception as e:
+                  print(f'Error processing {file_path}: {e}')
+          
+          # Update summary
+          for test in combined_results['tests']:
+              combined_results['summary']['total'] += 1
+              outcome = test.get('outcome', 'unknown')
+              if outcome in combined_results['summary']:
+                  combined_results['summary'][outcome] += 1
+          
+          # Write combined results
+          with open('reports/combined/all_results.json', 'w') as f:
+              json.dump(combined_results, f, indent=2)
+          
+          print(f'Combined {len(combined_results[\"tests\"])} test results')
+          print(f'Summary: {combined_results[\"summary\"]}')
+          "
+          
+          # Generate consolidated report
+          bash scripts/generate_report.sh -f html -i ./reports/combined/all_results.json -o ./reports/combined/summary_report.html -t "Storydoc Test Summary" -s
+
+      - name: Upload consolidated report
+        uses: actions/upload-artifact@v3
+        with:
+          name: consolidated-test-report
+          path: src/test/reports/combined/
+          retention-days: 30
