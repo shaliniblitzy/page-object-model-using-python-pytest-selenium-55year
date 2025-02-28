@@ -1,0 +1,80 @@
+{
+  "templates": [
+    {
+      "id": "basic",
+      "name": "Basic Template",
+      "description": "A simple template for general-purpose stories",
+      "category": "basic",
+      "thumbnailUrl": "https://editor-staging.storydoc.com/templates/basic.png",
+      "isDefault": true,
+      "elements": ["title", "text", "image"],
+      "features": ["Simple layout", "Minimalist design", "Quick to set up"]
+    },
+    {
+      "id": "blank",
+      "name": "Blank Canvas",
+      "description": "Start with a completely blank story",
+      "category": "basic",
+      "thumbnailUrl": "https://editor-staging.storydoc.com/templates/blank.png",
+      "isDefault": false,
+      "elements": ["title"],
+      "features": ["No predefined elements", "Complete customization", "Full creative control"]
+    },
+    {
+      "id": "presentation",
+      "name": "Presentation Template",
+      "description": "A template designed for presentations and slideshows",
+      "category": "business",
+      "thumbnailUrl": "https://editor-staging.storydoc.com/templates/presentation.png",
+      "isDefault": false,
+      "elements": ["title", "subtitle", "bullet-points", "image", "chart"],
+      "features": ["Slide-based layout", "Professional design", "Built-in transitions"]
+    },
+    {
+      "id": "product",
+      "name": "Product Showcase",
+      "description": "Showcase your products with this visually appealing template",
+      "category": "business",
+      "thumbnailUrl": "https://editor-staging.storydoc.com/templates/product.png",
+      "isDefault": false,
+      "elements": ["title", "product-image", "product-description", "features-list", "call-to-action"],
+      "features": ["Product-focused layout", "Feature highlighting", "Visual emphasis"]
+    },
+    {
+      "id": "creative",
+      "name": "Creative Portfolio",
+      "description": "A template for creative portfolios and artistic showcases",
+      "category": "creative",
+      "thumbnailUrl": "https://editor-staging.storydoc.com/templates/creative.png",
+      "isDefault": false,
+      "elements": ["title", "gallery", "image-grid", "artist-statement", "contact"],
+      "features": ["Gallery view", "Artistic layout", "Portfolio showcase"]
+    }
+  ],
+  "categories": [
+    {
+      "id": "basic",
+      "name": "Basic Templates",
+      "description": "Simple, general-purpose templates",
+      "order": 1
+    },
+    {
+      "id": "business",
+      "name": "Business Templates",
+      "description": "Templates designed for business presentations and products",
+      "order": 2
+    },
+    {
+      "id": "creative",
+      "name": "Creative Templates",
+      "description": "Templates for creative works and portfolios",
+      "order": 3
+    }
+  ],
+  "defaults": {
+    "defaultTemplateId": "basic",
+    "defaultCategoryId": "basic"
+  },
+  "templateCount": 5,
+  "featuredTemplates": ["basic", "presentation", "product"]
+}
