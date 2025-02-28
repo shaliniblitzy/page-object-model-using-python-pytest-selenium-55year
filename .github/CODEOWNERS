@@ -1,0 +1,40 @@
+* @qa-lead
+
+# Page Objects ownership
+src/test/pages/* @ui-automation-team
+
+# Locators ownership
+src/test/locators/* @ui-automation-team
+
+# Test ownership by feature area
+src/test/tests/user_registration/* @authentication-team
+src/test/tests/user_authentication/* @authentication-team
+src/test/tests/story_creation/* @content-team
+src/test/tests/story_sharing/* @content-team
+src/test/tests/performance/* @performance-team
+src/test/tests/end_to_end/* @qa-lead
+
+# Test infrastructure ownership
+src/test/utilities/* @automation-utilities-team
+src/test/fixtures/* @test-data-team
+src/test/data/* @test-data-team
+src/test/config/* @automation-utilities-team
+src/test/reports/* @reporting-team
+src/test/scripts/* @devops-team
+src/test/docs/* @documentation-team
+src/test/ci/* @devops-team
+
+# GitHub workflow and process files
+.github/workflows/* @devops-team
+.github/ISSUE_TEMPLATE/* @process-team
+.github/PULL_REQUEST_TEMPLATE.md @process-team
+
+# Infrastructure files
+infrastructure/* @devops-team
+
+# Documentation files
+README.md @documentation-team
+src/test/README.md @documentation-team
+
+# CODEOWNERS file itself
+.github/CODEOWNERS @qa-lead @devops-lead
