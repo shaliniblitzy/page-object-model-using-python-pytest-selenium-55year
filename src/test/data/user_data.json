@@ -1,0 +1,102 @@
+{
+  "default_user": {
+    "name": "Test User",
+    "email": "test.user@mailinator.com",
+    "password": "Test@123",
+    "terms_accepted": true
+  },
+  "valid_users": [
+    {
+      "name": "John Doe",
+      "email": "john.doe@mailinator.com",
+      "password": "Password123!",
+      "terms_accepted": true
+    },
+    {
+      "name": "Jane Smith",
+      "email": "jane.smith@mailinator.com",
+      "password": "Secure$456",
+      "terms_accepted": true
+    }
+  ],
+  "invalid_users": {
+    "empty_name": {
+      "name": "",
+      "email": "empty.name@mailinator.com",
+      "password": "Test@123",
+      "terms_accepted": true,
+      "expected_error": "Please enter your name"
+    },
+    "invalid_email_format": {
+      "name": "Invalid Email",
+      "email": "invalid-email",
+      "password": "Test@123",
+      "terms_accepted": true,
+      "expected_error": "Please enter a valid email address"
+    },
+    "weak_password": {
+      "name": "Weak Password",
+      "email": "weak.password@mailinator.com",
+      "password": "weak",
+      "terms_accepted": true,
+      "expected_error": "Password must be at least 8 characters long and include uppercase, lowercase, and special characters"
+    },
+    "terms_not_accepted": {
+      "name": "Terms Decline",
+      "email": "terms.decline@mailinator.com",
+      "password": "Strong@123",
+      "terms_accepted": false,
+      "expected_error": "You must accept the terms and conditions"
+    }
+  },
+  "test_users": {
+    "registration_user": {
+      "name": "Registration User",
+      "email_prefix": "registration.user",
+      "password": "Register@123",
+      "terms_accepted": true
+    },
+    "authentication_user": {
+      "name": "Authentication User",
+      "email": "authentication.user@mailinator.com",
+      "password": "Auth@123",
+      "terms_accepted": true
+    },
+    "story_creation_user": {
+      "name": "Story Creator",
+      "email": "story.creator@mailinator.com",
+      "password": "Create@123",
+      "terms_accepted": true
+    },
+    "story_sharing_user": {
+      "name": "Story Sharer",
+      "email": "story.sharer@mailinator.com",
+      "password": "Share@123",
+      "terms_accepted": true
+    },
+    "recipient_user": {
+      "name": "Story Recipient",
+      "email": "story.recipient@mailinator.com",
+      "password": "Receive@123",
+      "terms_accepted": true
+    }
+  },
+  "email_domains": [
+    "mailinator.com",
+    "maildrop.cc",
+    "guerrillamail.com"
+  ],
+  "password_requirements": {
+    "min_length": 8,
+    "require_uppercase": true,
+    "require_lowercase": true,
+    "require_number": true,
+    "require_special_char": true
+  },
+  "user_generation": {
+    "name_prefix": "Test User",
+    "email_prefix": "test.user",
+    "default_password": "Test@123",
+    "timestamp_format": "yyyyMMddHHmmss"
+  }
+}
