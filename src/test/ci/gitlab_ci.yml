@@ -1,0 +1,258 @@
+# GitLab CI/CD configuration for Storydoc test automation framework
+# This file defines the pipeline for running automated tests for core user flows:
+# - User Registration
+# - User Authentication
+# - Story Creation
+# - Story Sharing
+#
+# The pipeline integrates with a Page Object Model (POM) based automation framework
+# that ensures reliable, maintainable test automation for the Storydoc platform.
+
+# Define the stages of the pipeline in the order they will execute
+stages:
+  - setup        # Prepare the test environment and dependencies
+  - lint         # Run code quality checks on the test code
+  - unit_test    # Run unit tests for the framework components
+  - integration_test # Run integration tests for specific features
+  - e2e_test     # Run end-to-end tests for complete user flows
+
+# Default configuration applied to all jobs unless overridden
+default:
+  image: python:3.9-slim  # Use Python 3.9 as the base image for tests
+  before_script:
+    - pip install --upgrade pip  # Ensure pip is up to date
+    - pip install -r src/test/requirements.txt  # Install test dependencies
+  cache:
+    paths:
+      - .pip-cache/  # Cache pip packages to speed up builds
+    key: $CI_COMMIT_REF_SLUG  # Use branch/tag name for cache key
+
+# Define workflow rules to determine when the pipeline should run
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'  # Run on merge requests
+      when: always
+    - if: $CI_COMMIT_BRANCH == 'main'  # Run on pushes to main branch
+      when: always
+    - if: $CI_COMMIT_BRANCH == 'develop'  # Run on pushes to develop branch
+      when: always
+    - if: $CI_PIPELINE_SOURCE == 'schedule'  # Run on scheduled pipelines
+      when: always
+    - if: $CI_PIPELINE_SOURCE == 'web'  # Allow manual triggering from UI
+      when: always
+
+# Global variables available to all jobs
+variables:
+  TEST_ENVIRONMENT: staging  # Target environment for tests
+  TEST_BASE_URL: https://editor-staging.storydoc.com  # Application URL to test
+  TEST_HEADLESS_MODE: 'true'  # Run browsers in headless mode
+  TEST_DEFAULT_TIMEOUT: '10'  # Default timeout for UI operations in seconds
+  TEST_EMAIL_TIMEOUT: '60'  # Timeout for email verification in seconds
+  TEST_MAILINATOR_DOMAIN: mailinator.com  # Domain for test email accounts
+  PYTHONPATH: $CI_PROJECT_DIR  # Add project root to Python path
+  PIP_CACHE_DIR: $CI_PROJECT_DIR/.pip-cache  # Directory for pip cache
+
+# Setup environment job - prepares the test environment
+setup_environment:
+  stage: setup
+  script:
+    # Configure the test environment using the setup script
+    - bash src/test/scripts/setup_environment.sh staging
+    # Create directories for test artifacts
+    - mkdir -p src/test/reports/screenshots src/test/reports/html src/test/reports/logs
+  artifacts:
+    paths:
+      - src/test/reports/  # Preserve the reports directory for later jobs
+
+# Code quality job - ensures code meets quality standards
+code_quality:
+  stage: lint
+  script:
+    # Install linting tools
+    - pip install flake8 black
+    # Run flake8 to check for syntax errors and undefined names
+    - flake8 src/test --count --select=E9,F63,F7,F82 --show-source --statistics
+    # Verify code formatting with black
+    - black --check src/test
+  allow_failure: true  # Don't fail the pipeline for style issues
+
+# Unit tests job - tests the framework components
+unit_tests:
+  stage: unit_test
+  script:
+    # Run pytest on the utilities directory
+    - cd src/test && python -m pytest utilities/ -v
+  artifacts:
+    paths:
+      - src/test/reports/  # Preserve test reports
+    when: always  # Save artifacts even if the job fails
+    expire_in: 1 week  # Keep artifacts for 1 week
+
+# Integration tests for user registration and authentication
+integration_tests:
+  stage: integration_test
+  services:
+    # Use Selenium standalone Chrome container for browser automation
+    - name: selenium/standalone-chrome:latest
+      alias: selenium-chrome
+  variables:
+    # Configure Selenium to use the service container
+    SELENIUM_HOST: selenium-chrome
+    SELENIUM_PORT: 4444
+  script:
+    # Run user registration tests with Chrome in headless mode
+    - cd src/test && bash scripts/run_tests.sh -c user_registration -l true -b chrome -r true
+    # Run user authentication tests with Chrome in headless mode
+    - cd src/test && bash scripts/run_tests.sh -c user_authentication -l true -b chrome -r true
+  artifacts:
+    paths:
+      - src/test/reports/  # Preserve test reports
+    when: always  # Save artifacts even if the job fails
+    expire_in: 1 week  # Keep artifacts for 1 week
+  rules:
+    # Run automatically on merge requests and specific branches
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: always
+    - if: $CI_COMMIT_BRANCH == 'main'
+      when: always
+    - if: $CI_COMMIT_BRANCH == 'develop'
+      when: always
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+      when: always
+    # Run manually from web UI
+    - if: $CI_PIPELINE_SOURCE == 'web'
+      when: manual
+
+# Integration tests for story creation functionality
+story_creation_tests:
+  stage: integration_test
+  services:
+    # Use Selenium standalone Chrome container for browser automation
+    - name: selenium/standalone-chrome:latest
+      alias: selenium-chrome
+  variables:
+    # Configure Selenium to use the service container
+    SELENIUM_HOST: selenium-chrome
+    SELENIUM_PORT: 4444
+  script:
+    # Run story creation tests with Chrome in headless mode
+    - cd src/test && bash scripts/run_tests.sh -c story_creation -l true -b chrome -r true
+  artifacts:
+    paths:
+      - src/test/reports/  # Preserve test reports
+    when: always  # Save artifacts even if the job fails
+    expire_in: 1 week  # Keep artifacts for 1 week
+  rules:
+    # Run automatically on merge requests and specific branches
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: always
+    - if: $CI_COMMIT_BRANCH == 'main'
+      when: always
+    - if: $CI_COMMIT_BRANCH == 'develop'
+      when: always
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+      when: always
+    # Run manually from web UI
+    - if: $CI_PIPELINE_SOURCE == 'web'
+      when: manual
+
+# Integration tests for story sharing functionality
+story_sharing_tests:
+  stage: integration_test
+  services:
+    # Use Selenium standalone Chrome container for browser automation
+    - name: selenium/standalone-chrome:latest
+      alias: selenium-chrome
+  variables:
+    # Configure Selenium to use the service container
+    SELENIUM_HOST: selenium-chrome
+    SELENIUM_PORT: 4444
+  script:
+    # Run story sharing tests with Chrome in headless mode
+    - cd src/test && bash scripts/run_tests.sh -c story_sharing -l true -b chrome -r true
+  artifacts:
+    paths:
+      - src/test/reports/  # Preserve test reports
+    when: always  # Save artifacts even if the job fails
+    expire_in: 1 week  # Keep artifacts for 1 week
+  rules:
+    # Run automatically on merge requests and specific branches
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: always
+    - if: $CI_COMMIT_BRANCH == 'main'
+      when: always
+    - if: $CI_COMMIT_BRANCH == 'develop'
+      when: always
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+      when: always
+    # Run manually from web UI
+    - if: $CI_PIPELINE_SOURCE == 'web'
+      when: manual
+
+# End-to-end tests covering complete user workflows
+e2e_tests:
+  stage: e2e_test
+  services:
+    # Use Selenium standalone Chrome container for browser automation
+    - name: selenium/standalone-chrome:latest
+      alias: selenium-chrome
+  variables:
+    # Configure Selenium to use the service container
+    SELENIUM_HOST: selenium-chrome
+    SELENIUM_PORT: 4444
+  script:
+    # Run end-to-end tests with Chrome in headless mode, 2 parallel processes
+    - cd src/test && bash scripts/run_tests.sh -c end_to_end -l true -b chrome -r true -p 2
+  artifacts:
+    paths:
+      - src/test/reports/  # Preserve test reports
+    when: always  # Save artifacts even if the job fails
+    expire_in: 1 week  # Keep artifacts for 1 week
+  rules:
+    # Only run automatically on main and develop branches
+    - if: $CI_COMMIT_BRANCH == 'main'
+      when: always
+    - if: $CI_COMMIT_BRANCH == 'develop'
+      when: always
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+      when: always
+    # Run manually from web UI
+    - if: $CI_PIPELINE_SOURCE == 'web'
+      when: manual
+
+# Docker-based tests using docker-compose
+docker_tests:
+  stage: e2e_test
+  image: docker:20.10.16  # Use Docker image for this job
+  services:
+    # Use Docker-in-Docker service for running containers
+    - name: docker:20.10.16-dind
+  variables:
+    # Configure Docker TLS
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: /certs
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: /certs/client
+  before_script:
+    # Install required dependencies for Docker and Docker Compose
+    - apk add --no-cache docker-compose py3-pip bash
+    - pip install docker-compose
+  script:
+    # Build and run the Docker Compose setup for tests
+    - cd src/test/ci
+    - docker-compose build
+    - docker-compose up --abort-on-container-exit
+  artifacts:
+    paths:
+      - src/test/reports/  # Preserve test reports
+    when: always  # Save artifacts even if the job fails
+    expire_in: 1 week  # Keep artifacts for 1 week
+  rules:
+    # Only run automatically on main branch and schedules
+    - if: $CI_COMMIT_BRANCH == 'main'
+      when: always
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+      when: always
+    # Run manually from web UI
+    - if: $CI_PIPELINE_SOURCE == 'web'
+      when: manual
