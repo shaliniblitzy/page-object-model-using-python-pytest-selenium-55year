@@ -1,0 +1,65 @@
+{
+  "default_domain": "mailinator.com",
+  "domains": [
+    {
+      "domain": "mailinator.com",
+      "description": "Primary Mailinator domain for testing",
+      "supports_api": true,
+      "public_url": "https://www.mailinator.com/v4/public/inboxes.jsp?to={username}",
+      "is_private": false
+    },
+    {
+      "domain": "maildrop.cc",
+      "description": "Alternative email domain for testing",
+      "supports_api": false,
+      "public_url": "https://maildrop.cc/inbox/{username}",
+      "is_private": false
+    },
+    {
+      "domain": "storydoctest.com",
+      "description": "Branded domain for Storydoc testing (requires API key)",
+      "supports_api": true,
+      "public_url": "https://www.mailinator.com/v4/public/inboxes.jsp?to={username}&domain=storydoctest.com",
+      "is_private": true
+    },
+    {
+      "domain": "mailinator.io",
+      "description": "Alternative Mailinator domain with API support",
+      "supports_api": true,
+      "public_url": "https://www.mailinator.com/v4/public/inboxes.jsp?to={username}&domain=mailinator.io",
+      "is_private": false
+    }
+  ],
+  "domain_attributes": {
+    "mailinator.com": {
+      "supports_api": true,
+      "public_url_template": "https://www.mailinator.com/v4/public/inboxes.jsp?to={username}",
+      "api_requires_auth": false,
+      "message_retention_days": 7
+    },
+    "maildrop.cc": {
+      "supports_api": false,
+      "public_url_template": "https://maildrop.cc/inbox/{username}",
+      "api_requires_auth": false,
+      "message_retention_days": 2
+    },
+    "storydoctest.com": {
+      "supports_api": true,
+      "public_url_template": "https://www.mailinator.com/v4/public/inboxes.jsp?to={username}&domain=storydoctest.com",
+      "api_requires_auth": true,
+      "message_retention_days": 30
+    },
+    "mailinator.io": {
+      "supports_api": true,
+      "public_url_template": "https://www.mailinator.com/v4/public/inboxes.jsp?to={username}&domain=mailinator.io",
+      "api_requires_auth": false,
+      "message_retention_days": 7
+    }
+  },
+  "usage_notes": {
+    "registration_testing": "Use mailinator.com for most test cases as it supports API access without authentication",
+    "sharing_testing": "Use mailinator.com for recipient email addresses to verify shared stories",
+    "private_domains": "storydoctest.com requires API key for access",
+    "fallback_strategy": "If API access is unavailable, use public URL templates to manually verify emails"
+  }
+}
