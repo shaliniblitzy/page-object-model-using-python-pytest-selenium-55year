@@ -1,0 +1,188 @@
+name: Storydoc Test Automation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 0 * * *'  # Run at midnight every day
+  workflow_dispatch:
+    inputs:
+      test_category:
+        description: 'Test category to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - user_registration
+          - user_authentication
+          - story_creation
+          - story_sharing
+          - end_to_end
+      browser:
+        description: 'Browser to run tests on'
+        required: false
+        default: 'chrome'
+        type: choice
+        options:
+          - chrome
+          - firefox
+          - edge
+      headless:
+        description: 'Run in headless mode'
+        required: false
+        default: 'true'
+        type: boolean
+
+env:
+  TEST_ENVIRONMENT: staging
+  TEST_BASE_URL: https://editor-staging.storydoc.com
+  TEST_HEADLESS_MODE: 'true'
+  TEST_DEFAULT_TIMEOUT: '10'
+  TEST_EMAIL_TIMEOUT: '60'
+  TEST_MAILINATOR_DOMAIN: mailinator.com
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+          
+      - name: Install dependencies
+        run: pip install flake8 black
+        working-directory: .
+        
+      - name: Run flake8
+        run: flake8 src/test --count --select=E9,F63,F7,F82 --show-source --statistics
+        working-directory: .
+        
+      - name: Check formatting with black
+        run: black --check src/test
+        working-directory: .
+
+  unit_tests:
+    runs-on: ubuntu-latest
+    needs: linting
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+          
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+          
+      - name: Install dependencies
+        run: pip install -r src/test/requirements.txt
+        working-directory: .
+        
+      - name: Run unit tests
+        run: cd src/test && python -m pytest utilities/ -v
+        working-directory: .
+
+  integration_tests:
+    runs-on: ubuntu-latest
+    needs: unit_tests
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+          
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+          
+      - name: Install dependencies
+        run: pip install -r src/test/requirements.txt
+        working-directory: .
+        
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
+        
+      - name: Setup environment
+        run: cd src/test && bash scripts/setup_environment.sh staging
+        working-directory: .
+        
+      - name: Run integration tests
+        run: cd src/test && bash scripts/run_tests.sh -c user_registration -l true -b chrome -r true
+        working-directory: .
+        
+      - name: Upload test reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: integration-test-reports
+          path: src/test/reports/
+          retention-days: 7
+
+  e2e_tests:
+    runs-on: ubuntu-latest
+    needs: integration_tests
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+          
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+          
+      - name: Install dependencies
+        run: pip install -r src/test/requirements.txt
+        working-directory: .
+        
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
+        
+      - name: Setup environment
+        run: cd src/test && bash scripts/setup_environment.sh staging
+        working-directory: .
+        
+      - name: Create directories
+        run: mkdir -p src/test/reports/screenshots src/test/reports/html src/test/reports/logs
+        working-directory: .
+        
+      - name: Run E2E tests
+        run: cd src/test && bash scripts/run_tests.sh -c end_to_end -l true -b chrome -r true -p 2
+        working-directory: .
+        env:
+          TEST_BROWSER_TYPE: ${{ github.event.inputs.browser || 'chrome' }}
+          TEST_HEADLESS_MODE: ${{ github.event.inputs.headless || 'true' }}
+          TEST_CATEGORY: ${{ github.event.inputs.test_category || 'end_to_end' }}
+        
+      - name: Upload test reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-test-reports
+          path: src/test/reports/
+          retention-days: 7
