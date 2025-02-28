@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-automation-config
+  namespace: storydoc-automation
+  labels:
+    app: storydoc-test-automation
+    component: configuration
+    environment: staging
+  annotations:
+    description: "Configuration for Storydoc test automation framework"
+    owner: "qa-team"
+data:
+  BASE_URL: "https://editor-staging.storydoc.com"
+  API_BASE_URL: "https://api-staging.storydoc.com"
+  BROWSER_TYPE: "chrome"
+  HEADLESS_MODE: "true"
+  WINDOW_WIDTH: "1920"
+  WINDOW_HEIGHT: "1080"
+  DEFAULT_TIMEOUT: "10"
+  PAGE_LOAD_TIMEOUT: "30"
+  ELEMENT_TIMEOUT: "15"
+  SCRIPT_TIMEOUT: "30"
+  EMAIL_VERIFICATION_TIMEOUT: "60"
+  USER_REGISTRATION_TIMEOUT: "30"
+  USER_AUTHENTICATION_TIMEOUT: "20"
+  STORY_CREATION_TIMEOUT: "45"
+  STORY_SHARING_TIMEOUT: "60"
+  WORKFLOW_TIMEOUT: "180"
+  MAILINATOR_DOMAIN: "mailinator.com"
+  MAILINATOR_API_URL: "https://api.mailinator.com/api/v2"
+  TEST_USER_PASSWORD: "Test@123"
+  TEST_USER_NAME: "Test User"
+  SCREENSHOT_DIR: "/app/reports/screenshots"
+  REPORT_DIR: "/app/reports/html"
+  LOG_LEVEL: "INFO"
+  LOG_DIR: "/app/reports/logs"
+  RETRY_COUNT: "3"
+  PARALLEL_WORKERS: "2"
+  RUN_HEADLESS_IN_CI: "true"
+  PAGE_LOAD_THRESHOLD: "5"
+  ELEMENT_INTERACTION_THRESHOLD: "2"
+  API_RESPONSE_THRESHOLD: "3"
+  TEST_ENV: "STAGING"
+  CHROME_OPTIONS: "--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--disable-extensions,--disable-popup-blocking"
+  MAILINATOR_POLLING_INTERVAL: "5"
+  REGISTRATION_EMAIL_SUBJECT: "Welcome to Storydoc"
+  SHARING_EMAIL_SUBJECT: "Story shared with you"
+  IMPLICIT_WAIT: "0"
+  EMAIL_POLLING_INTERVAL: "5"
+  MAX_RETRY_COUNT: "3"
+  RETRY_TIMEOUT: "3"
+  BROWSER_ARGUMENTS: "--no-sandbox,--disable-dev-shm-usage,--disable-gpu,--disable-extensions,--disable-popup-blocking"
