@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storydoc-test-automation
+  namespace: storydoc-automation
+  labels:
+    app: storydoc-test-automation
+    component: test-runner
+    environment: staging
+  annotations:
+    description: Deployment for Storydoc test automation framework
+    owner: qa-team
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: storydoc-test-automation
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: storydoc-test-automation
+        component: test-runner
+    spec:
+      containers:
+      - name: test-runner
+        image: storydoc/test-automation:latest
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args: ["python -m pytest src/test/tests/end_to_end/test_complete_workflow.py -v --html=/app/reports/html/report.html"]
+        ports:
+        - containerPort: 8000
+          name: http
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: TEST_HEADLESS_MODE
+          value: "true"
+        - name: TEST_BROWSER_TYPE
+          value: "chrome"
+        - name: TEST_ENVIRONMENT
+          value: "staging"
+        - name: TEST_PARALLEL_WORKERS
+          value: "2"
+        envFrom:
+        - configMapRef:
+            name: test-automation-config
+        - secretRef:
+            name: storydoc-automation-secrets
+        volumeMounts:
+        - name: reports
+          mountPath: /app/reports
+        - name: config-volume
+          mountPath: /app/config
+        livenessProbe:
+          exec:
+            command: ["ls", "/app"]
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command: ["ls", "/app"]
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      volumes:
+      - name: reports
+        emptyDir: {}
+      - name: config-volume
+        configMap:
+          name: test-automation-config
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
