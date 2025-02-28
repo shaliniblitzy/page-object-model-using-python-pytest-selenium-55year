@@ -1,0 +1,171 @@
+name: Deploy Storydoc Test Automation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run daily at midnight UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment for deployment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      test_scope:
+        description: 'Scope of tests to run'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - regression
+          - all
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  PYTHON_VERSION: '3.9'
+  DOCKER_IMAGE: storydoc-automation
+  DEFAULT_ENVIRONMENT: 'staging'
+  MAILINATOR_DOMAIN: 'mailinator.com'
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-html pytest-xdist pytest-cov flake8
+      
+      - name: Run linting
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=sha
+            type=ref,event=branch
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE }}:buildcache,mode=max
+      
+      - name: Set up environment configuration
+        run: |
+          echo "Setting up configuration for ${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}"
+          # Create .env file from template with environment-specific values
+          cp .env.example .env
+          
+          # Set environment-specific variables
+          if [[ "${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}" == "production" ]]; then
+            echo "BASE_URL=https://editor.storydoc.com" >> .env
+          else
+            echo "BASE_URL=https://editor-staging.storydoc.com" >> .env
+          fi
+          
+          echo "TEST_EMAIL_DOMAIN=${{ env.MAILINATOR_DOMAIN }}" >> .env
+          echo "HEADLESS_MODE=true" >> .env
+      
+      - name: Deploy to target environment
+        run: |
+          echo "Deploying to ${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }} environment"
+          
+          # Enable deployment commands based on environment
+          if [[ "${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}" == "production" ]]; then
+            echo "Performing production deployment steps..."
+            # Production deployment commands would go here
+          else
+            echo "Performing staging deployment steps..."
+            # Staging deployment commands would go here
+          fi
+      
+      - name: Run smoke tests
+        if: ${{ github.event.inputs.test_scope == 'smoke' || github.event.inputs.test_scope == null }}
+        run: |
+          echo "Running smoke tests..."
+          python -m pytest tests/smoke_tests -v --html=test-reports/smoke-report.html --self-contained-html
+      
+      - name: Run regression tests
+        if: ${{ github.event.inputs.test_scope == 'regression' || github.event.inputs.test_scope == 'all' }}
+        run: |
+          echo "Running regression tests..."
+          python -m pytest tests/regression -v --html=test-reports/regression-report.html --self-contained-html
+      
+      - name: Run all tests
+        if: ${{ github.event.inputs.test_scope == 'all' }}
+        run: |
+          echo "Running all tests..."
+          python -m pytest --html=test-reports/full-report.html --self-contained-html --cov=. --cov-report=html:test-reports/coverage
+      
+      - name: Capture screenshots on failure
+        if: failure()
+        run: |
+          echo "Test failures detected - capturing screenshots..."
+          # Screenshots should be captured automatically during test failures
+          # This step ensures they are properly organized
+          mkdir -p test-reports/failure-screenshots
+          find screenshots -type f -name "*.png" -exec cp {} test-reports/failure-screenshots/ \;
+      
+      - name: Archive test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports-${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}
+          path: test-reports/
+          retention-days: 14
+          
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "Deployment and tests completed successfully"
+          # Add notification commands here or use a dedicated action
+          # Example: Use a webhook to notify Slack or Teams
+      
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Deployment or tests failed"
+          # Add failure notification commands here or use a dedicated action
+          # Important to notify team of failures quickly
