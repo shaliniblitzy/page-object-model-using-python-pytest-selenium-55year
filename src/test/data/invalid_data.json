@@ -1,0 +1,128 @@
+{
+  "registration": {
+    "invalidEmails": [
+      "plainaddress",
+      "email@domain",
+      "@domain.com",
+      "email@domain..com",
+      "email@.domain.com",
+      "email@domain.com.",
+      "email with spaces@domain.com",
+      "email@123.123.123.123",
+      "email@[123.123.123.123]",
+      "email@domain-without-tld",
+      "email@domain@domain.com",
+      ".email@domain.com",
+      "email.@domain.com",
+      "email..email@domain.com"
+    ],
+    "invalidPasswords": [
+      "",
+      "a",
+      "123",
+      "password",
+      "12345678",
+      "abcdefgh",
+      "test1234",
+      "aaaaaaaa",
+      "        ",
+      "password1"
+    ],
+    "invalidNames": [
+      "",
+      "a",
+      "1",
+      "A name that is way too long and exceeds the maximum character limit allowed by the application",
+      "Name$WithSpecial^Characters",
+      "Name With Multiple  Spaces",
+      "123456789",
+      "   "
+    ]
+  },
+  "authentication": {
+    "invalidCredentials": [
+      {
+        "email": "nonexistent@mailinator.com",
+        "password": "Password123"
+      },
+      {
+        "email": "test@mailinator.com",
+        "password": "wrongpassword"
+      },
+      {
+        "email": "",
+        "password": "Password123"
+      },
+      {
+        "email": "test@mailinator.com",
+        "password": ""
+      }
+    ]
+  },
+  "storyCreation": {
+    "invalidTitles": [
+      "",
+      "a",
+      "A title that is extremely long and would likely exceed the maximum character limit",
+      "Title$With%Special&Characters",
+      "   ",
+      "Title\nWith\nNewlines"
+    ],
+    "invalidTemplates": [
+      "",
+      "nonexistent_template",
+      "template_with_special_chars#$%",
+      "123456789"
+    ],
+    "invalidContent": [
+      {
+        "description": "Empty content",
+        "content": ""
+      },
+      {
+        "description": "Extremely long content",
+        "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+      },
+      {
+        "description": "Content with invalid HTML",
+        "content": "<div>Unclosed div<script>alert('XSS')</script>"
+      }
+    ]
+  },
+  "storySharing": {
+    "invalidRecipients": [
+      "",
+      "plainaddress",
+      "email@domain",
+      "@domain.com",
+      "email.domain.com",
+      "email@domain@domain.com",
+      ".email@domain.com",
+      "email.@domain.com"
+    ],
+    "invalidMessages": [
+      {
+        "description": "Extremely long message",
+        "message": "This is a very long message that exceeds the character limit that might be imposed by the Storydoc application for sharing messages. It contains multiple sentences and paragraphs to ensure it's truly lengthy. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+      },
+      {
+        "description": "Message with HTML",
+        "message": "<script>alert('test')</script><b>Bold text</b>"
+      }
+    ]
+  },
+  "performance": {
+    "largeBatchRecipients": [
+      "recipient1@mailinator.com",
+      "recipient2@mailinator.com",
+      "recipient3@mailinator.com",
+      "recipient4@mailinator.com",
+      "recipient5@mailinator.com",
+      "recipient6@mailinator.com",
+      "recipient7@mailinator.com",
+      "recipient8@mailinator.com",
+      "recipient9@mailinator.com",
+      "recipient10@mailinator.com"
+    ]
+  }
+}
